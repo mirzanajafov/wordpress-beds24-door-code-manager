@@ -107,14 +107,14 @@ class Beds24
             $query .= " phone = %s";
             $placeholders[] = preg_replace('/[^\d]/', '', $value);
         }
-        $query .= " AND checkout >= %s";
+        $query .= " AND checkout >= %s AND blocked = %d";
         $placeholders[] = date('Y-m-d');// Today
+        $placeholders[] = (int)false;
 
         $query .= " LIMIT %d";
         $placeholders[] = (int)$limit;
 
         $prepared_query = $wpdb->prepare($query, $placeholders);
-        error_log($prepared_query);
         $results = $wpdb->get_results($prepared_query, ARRAY_A);
 
         if (empty($results)) {
@@ -128,19 +128,31 @@ class Beds24
         return $results;
     }
 
-    static function get_recent_bookings($page = 1, $limit = 10)
+    static function get_recent_bookings($page = 1, $limit = 10, $blocked = null)
     {
         global $wpdb;
         $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
         $offset = ($page - 1) * $limit;
 
-        $query = $wpdb->prepare("
-            SELECT * 
-            FROM $tablename 
-            ORDER BY checkin DESC 
-            LIMIT %d OFFSET %d
-        ", $limit, $offset);
-        return $wpdb->get_results($query, ARRAY_A);
+        $query = "SELECT * FROM $tablename";
+
+        $whereClauses = [];
+        if ($blocked === true) {
+            $whereClauses[] = "blocked = 1";
+        }
+
+        if (!empty($whereClauses)) {
+            $query .= " WHERE " . implode(" AND ", $whereClauses);
+        }
+
+
+        $query .= " ORDER BY checkin DESC LIMIT %d OFFSET %d";
+
+        error_log("Query: $query");
+
+
+        $prepared_query = $wpdb->prepare($query, $limit, $offset);
+        return $wpdb->get_results($prepared_query, ARRAY_A);
     }
 
     static function update_booking_checkin_url($old_url, $new_url)
@@ -162,11 +174,15 @@ class Beds24
         }
     }
 
-    static function get_total_bookings()
+    static function get_total_bookings($blocked = null)
     {
         global $wpdb;
         $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
         $query = "SELECT COUNT(*) FROM $tablename";
+
+        if ($blocked === true) {
+            $query .= " WHERE blocked = 1";
+        }
 
         return $wpdb->get_var($query);
     }
@@ -396,6 +412,27 @@ class Beds24
             return new WP_REST_Response($result, 200);
         } else {
             return new WP_REST_Response('Processing failed', 500);
+        }
+    }
+
+    static function block_guest($booking_id, $block)
+    {
+        global $wpdb;
+
+        $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
+
+        $updated = $wpdb->update(
+            $tablename,
+            [
+                'blocked' => $block
+            ],
+            ['booking_id' => $booking_id]
+        );
+        error_log($updated);
+        if ($updated) {
+            return "Booking ID {$booking_id} updated.";
+        } else {
+            return "Something get wrong when updating Booking ID {$booking_id}";
         }
     }
 }

@@ -65,7 +65,8 @@ class App
                 checkout DATE NOT NULL,
                 reservation_number VARCHAR(255) NULL UNIQUE,
                 checkin_link TEXT,
-                full_name VARCHAR(255) NOT NULL
+                full_name VARCHAR(255) NOT NULL,
+                blocked BOOLEAN DEFAULT FALSE,
             ) $charset_collate;";
             require_once(ABSPATH . '/wp-admin/includes/upgrade.php');
             dbDelta($sql);
@@ -88,6 +89,7 @@ class App
         add_menu_page('Door Codes Manager', 'Door Codes Manager', 'manage_options', 'door_codes_manager', ['DCM\Utils', 'dcm_admin_page'], 'dashicons-admin-multisite', 6);
         add_submenu_page('door_codes_manager', 'Beds24 Properties', 'Beds24 Properties', 'manage_options', 'door_codes_manager_beds24', ['DCM\Utils', 'dcm_beds24_page']);
         add_submenu_page('door_codes_manager', 'Beds24 Bookings', 'Beds24 Bookings', 'manage_options', 'door_codes_manager_beds24_bookings', ['DCM\Utils', 'dcm_beds24_bookings_page']);
+        add_submenu_page('door_codes_manager', 'Blocked Guests', 'Blocked Guests', 'manage_options', 'door_codes_manager_blocked_guests', ['DCM\Utils', 'dcm_blocked_guests_page']);
 //        add_options_page('DCM Settings', 'DCM Settings', 'manage_options', 'dcm-settings' );
     }
 

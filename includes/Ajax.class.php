@@ -16,6 +16,7 @@ class Ajax
         add_action('wp_ajax_dcm_updateBeds24PropTemplate', [$this, 'dcm_updateBeds24PropTemplate']);
         add_action('wp_ajax_dcm_getBookingByCriteria', [$this, 'dcm_getBookingByCriteria']);
         add_action('wp_ajax_nopriv_dcm_getBookingByCriteria', [$this, 'dcm_getBookingByCriteria']);
+        add_action('wp_ajax_dcm_blockGuest', [$this, 'dcm_blockGuest']);
     }
 
     static function register()
@@ -68,7 +69,7 @@ class Ajax
         $new_slug = Utils::generateRandomSlug(15);
         $page_id = $_POST['page_id'];
         $old_url = $_POST['old_url'];
-        
+
         wp_update_post([
             'ID' => $page_id,
             'post_name' => $new_slug
@@ -110,7 +111,7 @@ class Ajax
         check_ajax_referer('dcm_search_nonce', 'security');
         $key = isset($_GET['searchBy']) ? sanitize_text_field($_GET['searchBy']) : '';
         $value = isset($_GET['searchValue']) ? sanitize_text_field($_GET['searchValue']) : '';
-        error_log($key);
+
         if (empty($key) || empty($value)) {
             wp_send_json_error(['message' => 'Key and value are required']);
         }
@@ -122,6 +123,18 @@ class Ajax
         }
         $html = Utils::getTemplate('partials' . DIRECTORY_SEPARATOR . 'dcm_booking_results', ['bookings' => $results]);
         wp_send_json_success(['html' => $html]);
+
+        wp_die();
+    }
+
+    function dcm_blockGuest()
+    {
+        $data = json_decode(stripslashes(sanitize_text_field($_POST['data'])), ARRAY_A);
+        $booking_id = $data['bookingId'];
+        $blocked = $data['blocked'];
+        $result = Beds24::block_guest($booking_id, $blocked ? 0 : 1);
+
+        wp_send_json_success(['result' => $result]);
 
         wp_die();
     }

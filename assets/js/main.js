@@ -178,4 +178,36 @@ jQuery(document).ready(function ($) {
 
         })
     });
+
+    $(document).on('click', '.dcm__guest-blocker', function (event) {
+        const button = $(this);
+        const bookingId = button.data('id');
+        const blocked = button.data('blocked');
+
+        const data = {
+            bookingId,
+            blocked,
+        }
+        
+        $.ajax({
+            url: dcm.ajaxurl,
+            type: 'post',
+            data: {
+                action: 'dcm_blockGuest',
+                data: JSON.stringify(data)
+            },
+            beforeSend: function () {
+                button.html('<div class="dcm-spinner"></div>')
+            },
+            success: function (response) {
+                if (response.success) {
+                    const newBlockedValue = blocked === 1 ? 0 : 1;
+                    button.data("blocked", newBlockedValue);
+                    button.html(newBlockedValue === 1 ? "Unblock" : "Block");
+                } else {
+                    alert("An error occurred while updating.");
+                }
+            }
+        })
+    })
 });

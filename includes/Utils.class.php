@@ -64,6 +64,17 @@ class Utils
         echo Utils::getTemplate('dcm_beds24_bookings-page', ['bookings' => $bookings, 'total_pages' => $total_pages, 'current_page' => $current_page]);
     }
 
+    static function dcm_blocked_guests_page()
+    {
+        $limit = 30;
+        $current_page = isset($_GET['paged']) ? absint($_GET['paged']) : 1;
+        $blocked_guests = Beds24::get_recent_bookings($current_page, $limit, true);
+        $total_bookings = Beds24::get_total_bookings(true);
+        $total_pages = ceil($total_bookings / $limit);
+        echo Utils::getTemplate('dcm_blocked_guests-page', ['bookings' => $blocked_guests, 'total_pages' => $total_pages, 'current_page' => $current_page]);
+    }
+    
+
     static function insert_dcm_shortcodes($page_id, $shortcode, $code)
     {
         global $wpdb;

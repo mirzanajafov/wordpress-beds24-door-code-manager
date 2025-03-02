@@ -10,7 +10,7 @@ if (isset($data)) {
 ?>
 
 <div class="wrap dcm">
-    <h2>Beds24 Bookings</h2>
+    <h2>Blocked Guests</h2>
     <section class="dcm__table-section responsive-table-wrapper">
         <table class="responsive-table">
             <thead>
@@ -28,7 +28,7 @@ if (isset($data)) {
             <tbody>
             <?php
             if (empty($bookings)) {
-                echo '<tr><td colspan="7">No bookings found.</td></tr>';
+                echo '<tr><td colspan="7">No Blocked Guest found.</td></tr>';
             } else {
                 foreach ($bookings as $booking) {
                     echo '<tr>';

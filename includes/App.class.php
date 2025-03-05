@@ -14,6 +14,7 @@ class App
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action('admin_menu', [$this, 'dcm_admin_menu']);
         add_action('save_post_page', [$this, 'save_door_codes']);
+        add_action('admin_init', [$this, 'dcm_admin_init']);
         Ajax::register();
         Beds24::register();
         Shortcode::register();
@@ -28,6 +29,32 @@ class App
     {
         $this->create_dcm_database_table();
         $this->create_bookings_database_table();
+    }
+
+    function dcm_admin_init()
+    {
+        register_setting('dcm_options_group', 'dcm_options');
+
+        $fields = [
+            'options_id' => 'Options ID',
+            'api_key' => 'API Key',
+            'custom_url' => 'Custom URL'
+        ];
+
+        add_settings_section('dcm_settings_section', 'DCM Settings', null, 'dcm-settings');
+
+        foreach ($fields as $key => $label) {
+            add_settings_field(
+                $key,
+                $label,
+                function () use ($key) {
+                    $options = get_option('dcm_options');
+                    echo '<input type="text" name="dcm_options[' . esc_attr($key) . ']" value="' . esc_attr($options[$key] ?? '') . '" />';
+                },
+                'dcm-settings',
+                'dcm_settings_section'
+            );
+        }
     }
 
     function create_dcm_database_table()
@@ -90,6 +117,7 @@ class App
         add_submenu_page('door_codes_manager', 'Beds24 Properties', 'Beds24 Properties', 'manage_options', 'door_codes_manager_beds24', ['DCM\Utils', 'dcm_beds24_page']);
         add_submenu_page('door_codes_manager', 'Beds24 Bookings', 'Beds24 Bookings', 'manage_options', 'door_codes_manager_beds24_bookings', ['DCM\Utils', 'dcm_beds24_bookings_page']);
         add_submenu_page('door_codes_manager', 'Blocked Guests', 'Blocked Guests', 'manage_options', 'door_codes_manager_blocked_guests', ['DCM\Utils', 'dcm_blocked_guests_page']);
+        add_submenu_page('door_codes_manager', 'Settings', 'Settings', 'manage_options', 'door_codes_manager_settings', ['DCM\Utils', 'dcm_blocked_settings_page']);
 //        add_options_page('DCM Settings', 'DCM Settings', 'manage_options', 'dcm-settings' );
     }
 

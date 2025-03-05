@@ -3,7 +3,7 @@
  * Plugin Name: Door Codes Manager
  * Plugin URI:
  * Description: Door Codes Manager.
- * Version: 2.6.1
+ * Version: 2.8.3
  * License: GPL2
  * License URI:  https://www.gnu.org/licenses/gpl-2.0.html
  * Author: Mirza

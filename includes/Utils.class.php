@@ -73,7 +73,23 @@ class Utils
         $total_pages = ceil($total_bookings / $limit);
         echo Utils::getTemplate('dcm_blocked_guests-page', ['bookings' => $blocked_guests, 'total_pages' => $total_pages, 'current_page' => $current_page]);
     }
-    
+
+    static function dcm_blocked_settings_page()
+    {
+        ?>
+        <div class="wrap">
+            <h1>My Plugin Settings</h1>
+            <form method="post" action="options.php">
+                <?php
+                settings_fields('dcm_options_group');
+                do_settings_sections('dcm-settings');
+                submit_button();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
+
 
     static function insert_dcm_shortcodes($page_id, $shortcode, $code)
     {

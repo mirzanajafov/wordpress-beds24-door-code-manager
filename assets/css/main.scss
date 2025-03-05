@@ -45,6 +45,12 @@
     }
   }
 
+  .dcm_beds24_bookings_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
   .dcm-spinner {
     display: inline-block;
     width: 20px;

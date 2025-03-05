@@ -1,16 +1,35 @@
 <?php
 
-use DCM\Utils;
+use DCM\Beds24;
 
 $bookings = $total_pages = [];
-
+$current_page = isset($_GET['paged']) ? absint($_GET['paged']) : 1;
 if (isset($data)) {
     extract($data);
+}
+
+$search_query = '';
+
+if (!empty($_GET['search'])) {
+    $search_query = sanitize_text_field($_GET['search']);
+    $limit = 30;
+    $bookings = Beds24::get_bookings_by_search($search_query, $current_page, $limit);
+    $total_bookings = Beds24::get_total_bookings(null, $search_query);
+    $total_pages = ceil($total_bookings / $limit);
 }
 ?>
 
 <div class="wrap dcm">
-    <h2>Beds24 Bookings</h2>
+    <header class="dcm_beds24_bookings_header">
+        <h2>Beds24 Bookings</h2>
+        <form method="GET" class="dcm__search-form">
+            <input type="hidden" name="page" value="door_codes_manager_beds24_bookings">
+            <input type="text" name="search" value="<?php echo esc_attr($search_query); ?>"
+                   placeholder="Search bookings...">
+            <button type="submit" class="button-primary">Search</button>
+        </form>
+    </header>
+
     <section class="dcm__table-section responsive-table-wrapper">
         <table class="responsive-table">
             <thead>

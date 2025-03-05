@@ -37,6 +37,11 @@
   line-height: 1.2em;
   font-size: 14pt;
 }
+.dcm .dcm_beds24_bookings_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .dcm .dcm-spinner {
   display: inline-block;
   width: 20px;

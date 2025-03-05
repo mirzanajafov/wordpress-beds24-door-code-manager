@@ -6,14 +6,19 @@ use WP_REST_Response;
 
 class Beds24
 {
+    private static int $optionsId = 172;
+
+//    private array $options;
+
     public function __construct()
     {
+//        $this->options = get_options('dcm_options');
         add_action('rest_api_init', array($this, 'register_webhook_endpoint'));
     }
 
     static function register()
     {
-        new self();
+        return new self();
     }
 
 
@@ -131,6 +136,8 @@ class Beds24
     static function get_recent_bookings($page = 1, $limit = 10, $blocked = null)
     {
         global $wpdb;
+//        self::init();
+//        error_log(print_r($this->options, true));
         $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
         $offset = ($page - 1) * $limit;
 
@@ -155,6 +162,21 @@ class Beds24
         return $wpdb->get_results($prepared_query, ARRAY_A);
     }
 
+    static function get_bookings_by_search($search, $page = 1, $limit = 10)
+    {
+        global $wpdb;
+
+        $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
+
+        $offset = ($page - 1) * $limit;
+
+        $query = "SELECT * FROM $tablename WHERE full_name LIKE %s ORDER BY checkin DESC LIMIT %d OFFSET %d";
+        $search_term = '%' . $wpdb->esc_like($search) . '%';
+
+        $prepared_query = $wpdb->prepare($query, $search_term, $limit, $offset);
+        return $wpdb->get_results($prepared_query, ARRAY_A);
+    }
+
     static function update_booking_checkin_url($old_url, $new_url)
     {
         global $wpdb;
@@ -174,7 +196,7 @@ class Beds24
         }
     }
 
-    static function get_total_bookings($blocked = null)
+    static function get_total_bookings($blocked = null, $search = '')
     {
         global $wpdb;
         $tablename = esc_sql($wpdb->prefix . "beds24_bookings");
@@ -184,13 +206,18 @@ class Beds24
             $query .= " WHERE blocked = 1";
         }
 
+        if (!empty($search)) {
+            $search_term = '%' . $wpdb->esc_like($search) . '%';
+            $query .= " WHERE full_name LIKE '$search_term'";
+        }
+
         return $wpdb->get_var($query);
     }
 
     static function getPropertyTemplate($prop_id)
     {
-        $apiKey = get_field("beds24_apiKey", 172);
-        $propKey = get_field("prop_" . $prop_id, 172);
+        $apiKey = get_field("beds24_apiKey", self::$optionsId);
+        $propKey = get_field("prop_" . $prop_id, self::$optionsId);
 
         if (!$apiKey || !$propKey) {
             return '';
@@ -220,8 +247,8 @@ class Beds24
 
     static function updatePropertyTemplate($prop_id, $template)
     {
-        $apiKey = get_field("beds24_apiKey", 172);
-        $propKey = get_field("prop_" . $prop_id, 172);
+        $apiKey = get_field("beds24_apiKey", self::$optionsId);
+        $propKey = get_field("prop_" . $prop_id, self::$optionsId);
 
         if (!$apiKey || !$propKey) {
             return;
@@ -287,11 +314,11 @@ class Beds24
             return;
         }
         foreach ($room_properties as $room_property) {
-            $prop_id = $room_property['Beds24_prop_id'];
+            $prop_id = $room_property['Beds_property_id']; //Beds_property_id
             $room_id = $room_property['Beds24_room_id'];
 
-            $apiKey = get_field("beds24_apiKey", 172);
-            $propKey = get_field("prop_" . $prop_id, 172);
+            $apiKey = get_field("beds24_apiKey", self::$optionsId); // make post_id dynamic somehow 4327
+            $propKey = get_field("prop_" . $prop_id, self::$optionsId);
 
             if (!$apiKey || !$propKey) {
                 return;
